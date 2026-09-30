@@ -1,0 +1,209 @@
+.records-explorer-empty {
+  margin-top: 1.25rem;
+  padding: 0.5rem 0;
+}
+
+.records-explorer-empty h2 {
+  margin: 0;
+  color: #173b6c;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.records-explorer-empty p {
+  margin: 0.4rem 0 0;
+  color: #536174;
+  line-height: 1.55;
+}
+
+.records-explorer {
+  margin-top: 2rem;
+}
+
+.records-explorer__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.records-explorer__heading h2 {
+  margin: 0;
+  color: #253247;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.records-explorer__reset {
+  min-height: 2.5rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid #9aa8b8;
+  border-radius: 999px;
+  background: transparent;
+  color: #253247;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.records-explorer__reset:hover {
+  background: #e8edf3;
+}
+
+.records-explorer__filters {
+  display: grid;
+  grid-template-columns: minmax(14rem, 2fr) repeat(3, minmax(9rem, 1fr));
+  align-items: end;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.records-explorer__field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.4rem;
+  color: #34445a;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.records-explorer__field input,
+.records-explorer__field select {
+  width: 100%;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid #c7d0dc;
+  border-radius: 0.7rem;
+  background: #fff;
+  color: #253247;
+  font: inherit;
+  font-weight: 400;
+}
+
+.records-explorer__field input:focus,
+.records-explorer__field select:focus {
+  border-color: #35649b;
+  outline: 0.15rem solid rgb(53 100 155 / 20%);
+}
+
+.records-explorer__workload {
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 0.125rem 0.75rem rgb(20 40 70 / 8%);
+}
+
+.records-explorer__workload h3 {
+  margin: 0;
+  color: #253247;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.records-explorer__workload > p {
+  margin: 0.35rem 0 0;
+  color: #536174;
+  font-size: 0.9rem;
+}
+
+.records-explorer__metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 0;
+}
+
+.records-explorer__metrics div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.records-explorer__metrics dt {
+  color: #536174;
+  font-size: 0.9rem;
+}
+
+.records-explorer__metrics dd {
+  margin: 0;
+  color: #173b6c;
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.records-explorer__coverage {
+  margin: 1.25rem 0 0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.7rem;
+  background: #eaf4ff;
+  color: #294c70;
+  line-height: 1.45;
+}
+
+.records-explorer__count {
+  margin: 1rem 0 0.65rem;
+  color: #536174;
+  font-size: 0.9rem;
+}
+
+.records-explorer__table-wrap {
+  overflow: auto;
+  border: 1px solid #d9e0e8;
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.records-explorer__table-wrap table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.records-explorer__table-wrap th,
+.records-explorer__table-wrap td {
+  padding: 0.7rem 0.8rem;
+  border-bottom: 1px solid #e5eaf0;
+  text-align: left;
+  vertical-align: top;
+}
+
+.records-explorer__table-wrap th {
+  background: #f5f7fa;
+  color: #34445a;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.records-explorer__table-wrap tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+@media (max-width: 54rem) {
+  .records-explorer__filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .records-explorer__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 34rem) {
+  .records-explorer__filters {
+    grid-template-columns: 1fr;
+  }
+
+  .records-explorer__heading {
+    align-items: flex-start;
+  }
+
+  .records-explorer__workload {
+    padding: 1rem;
+  }
+}
