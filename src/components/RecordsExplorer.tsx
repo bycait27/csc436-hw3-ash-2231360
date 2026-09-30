@@ -66,6 +66,22 @@ export function RecordsExplorer({ dataset }: RecordsExplorerProps) {
     () => calculateWorkload(dataset?.headers ?? [], filteredRows.map(({ row }) => row)),
     [dataset, filteredRows],
   )
+  const zoneWorkloads = useMemo(
+    () =>
+      (['North', 'Central', 'South'] as const).map((zoneName) => ({
+        zone: zoneName,
+        metrics: calculateWorkload(
+          dataset?.headers ?? [],
+          filteredRows
+            .filter(({ row }) => {
+              const zoneIndex = dataset?.headers.indexOf('zone') ?? -1
+              return (row[zoneIndex] ?? '') === zoneName
+            })
+            .map(({ row }) => row),
+        ),
+      })),
+    [dataset, filteredRows],
+  )
 
   function resetFilters() {
     setSearch('')
@@ -151,7 +167,7 @@ export function RecordsExplorer({ dataset }: RecordsExplorerProps) {
           aria-labelledby="records-explorer-workload-title"
         >
           <h3 id="records-explorer-workload-title">Matching workload</h3>
-          <p>
+          <p className="records-explorer__intro">
             All matching records, not just the displayed page. Reference date:
             {' '}2026-04-01 (UTC).
           </p>
@@ -176,6 +192,42 @@ export function RecordsExplorer({ dataset }: RecordsExplorerProps) {
           <p className="records-explorer__coverage">
             {workload.knownOpenCount} of {workload.openTickets} open tickets estimated;{' '}
             {workload.unknownOpenCount} unknown.
+          </p>
+          <p className="records-explorer__zone-caption">
+            Compare zones within the current filters
+          </p>
+          <div className="records-explorer__zone-table-wrap">
+            <table className="records-explorer__zone-table">
+              <thead>
+                <tr>
+                  <th scope="col">Zone</th>
+                  <th scope="col">Matching</th>
+                  <th scope="col">Open</th>
+                  <th scope="col">Overdue open</th>
+                  <th scope="col">Known hours</th>
+                  <th scope="col">Estimate coverage</th>
+                </tr>
+              </thead>
+              <tbody>
+                {zoneWorkloads.map(({ zone: zoneName, metrics }) => (
+                  <tr key={zoneName}>
+                    <th scope="row">{zoneName}</th>
+                    <td>{metrics.matchingTickets.toLocaleString()}</td>
+                    <td>{metrics.openTickets.toLocaleString()}</td>
+                    <td>{metrics.overdueOpen.toLocaleString()}</td>
+                    <td>{metrics.knownOpenHours.toLocaleString()}</td>
+                    <td>
+                      {metrics.knownOpenCount} of {metrics.openTickets} open tickets estimated;{' '}
+                      {metrics.unknownOpenCount} unknown.
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="records-explorer__zone-note">
+            Overdue means open for at least 14 days. Ticket counts are not
+            population-adjusted incident rates.
           </p>
         </section>
 
