@@ -27,6 +27,7 @@ interface CsvUploaderProps {
   onDatasetLoaded: (
     dataset: ParsedCsv & { fileName: string },
   ) => DatasetLoadResult | Promise<DatasetLoadResult>
+  onDatasetAccepted?: (dataset: ParsedCsv & { fileName: string }) => void
 }
 
 interface ActiveDataset extends DatasetLoadResult {
@@ -41,7 +42,10 @@ interface UploadError {
 
 class InvalidCsvHeaderError extends Error {}
 
-export function CsvUploader({ onDatasetLoaded }: CsvUploaderProps) {
+export function CsvUploader({
+  onDatasetLoaded,
+  onDatasetAccepted,
+}: CsvUploaderProps) {
   const [selectedFileName, setSelectedFileName] = useState('')
   const [activeDataset, setActiveDataset] = useState<ActiveDataset | null>(null)
   const [error, setError] = useState<UploadError | null>(null)
@@ -98,6 +102,7 @@ export function CsvUploader({ onDatasetLoaded }: CsvUploaderProps) {
         throw new Error('The dataset validator returned invalid record counts.')
       }
 
+      onDatasetAccepted?.({ ...parsed, fileName: file.name })
       setActiveDataset({ fileName: file.name, acceptedCount, rejectedCount })
     } catch (caughtError) {
       setError({
