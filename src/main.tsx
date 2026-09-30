@@ -1,9 +1,16 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { CsvUploader } from './components/CsvUploader'
+import { RecordsExplorer } from './components/RecordsExplorer'
+import { useState } from 'react'
+import type { ParsedCsv } from './lib/parseCsv'
 import './app.css'
 
 export function App() {
+  const [dataset, setDataset] = useState<
+    (ParsedCsv & { fileName: string }) | null
+  >(null)
+
   return (
     <>
       <header className="app-header">
@@ -12,12 +19,14 @@ export function App() {
       </header>
       <main className="app-main">
         <CsvUploader
+          onDatasetAccepted={setDataset}
           onDatasetLoaded={({ rows }) => ({
             // Record-level validation will replace this parse-only count.
             acceptedCount: rows.length,
             rejectedCount: 0,
           })}
         />
+        <RecordsExplorer dataset={dataset} />
       </main>
     </>
   )
