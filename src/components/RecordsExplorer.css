@@ -197,45 +197,6 @@
   line-height: 1.45;
 }
 
-.records-explorer__count {
-  margin: 1rem 0 0.65rem;
-  color: #536174;
-  font-size: 0.9rem;
-}
-
-.records-explorer__table-wrap {
-  overflow: auto;
-  border: 1px solid #d9e0e8;
-  border-radius: 0.75rem;
-  background: #fff;
-}
-
-.records-explorer__table-wrap table {
-  width: 100%;
-  margin: 0;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-.records-explorer__table-wrap th,
-.records-explorer__table-wrap td {
-  padding: 0.7rem 0.8rem;
-  border-bottom: 1px solid #e5eaf0;
-  text-align: left;
-  vertical-align: top;
-}
-
-.records-explorer__table-wrap th {
-  background: #f5f7fa;
-  color: #34445a;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.records-explorer__table-wrap tbody tr:last-child td {
-  border-bottom: 0;
-}
-
 @media (max-width: 54rem) {
   .records-explorer__filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));

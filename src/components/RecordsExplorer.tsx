@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { ParsedCsv } from '../lib/parseCsv'
 import { calculateWorkload } from '../lib/workloadMetrics'
+import { MatchingTickets } from './MatchingTickets'
 import './RecordsExplorer.css'
 
 interface RecordsExplorerProps {
@@ -9,7 +10,7 @@ interface RecordsExplorerProps {
 
 type ZoneFilter = 'all' | 'North' | 'Central' | 'South'
 type StatusFilter = 'all' | 'Open' | 'Closed'
-type SortOrder = 'oldest' | 'newest'
+type SortOrder = 'ticketId' | 'oldest' | 'newest'
 
 function isZoneFilter(value: string): value is ZoneFilter {
   return ['all', 'North', 'Central', 'South'].includes(value)
@@ -20,14 +21,14 @@ function isStatusFilter(value: string): value is StatusFilter {
 }
 
 function isSortOrder(value: string): value is SortOrder {
-  return value === 'oldest' || value === 'newest'
+  return value === 'ticketId' || value === 'oldest' || value === 'newest'
 }
 
 export function RecordsExplorer({ dataset }: RecordsExplorerProps) {
   const [search, setSearch] = useState('')
   const [zone, setZone] = useState<ZoneFilter>('all')
   const [status, setStatus] = useState<StatusFilter>('all')
-  const [sortOrder, setSortOrder] = useState<SortOrder>('oldest')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('ticketId')
 
   const filteredRows = useMemo(() => {
     if (!dataset) return []
@@ -53,12 +54,19 @@ export function RecordsExplorer({ dataset }: RecordsExplorerProps) {
         return matchesSearch && matchesZone && matchesStatus
       })
       .sort((first, second) => {
+        if (sortOrder === 'ticketId') {
+          return value(first.row, 'ticket_id').localeCompare(
+            value(second.row, 'ticket_id'),
+            undefined,
+            { numeric: true },
+          ) || first.index - second.index
+        }
+
         const firstDate = value(first.row, 'opened_on')
         const secondDate = value(second.row, 'opened_on')
         const dateOrder = firstDate.localeCompare(secondDate)
 
-        return (sortOrder === 'oldest' ? dateOrder : -dateOrder) ||
-          first.index - second.index
+        return (sortOrder === 'oldest' ? dateOrder : -dateOrder) || first.index - second.index
       })
   }, [dataset, search, sortOrder, status, zone])
 
@@ -87,11 +95,12 @@ export function RecordsExplorer({ dataset }: RecordsExplorerProps) {
     setSearch('')
     setZone('all')
     setStatus('all')
-    setSortOrder('oldest')
+    setSortOrder('ticketId')
   }
 
   if (dataset) {
     return (
+      <>
       <section className="records-explorer" aria-labelledby="records-explorer-title">
         <div className="records-explorer__heading">
           <h2 id="records-explorer-title">Explore the records</h2>
@@ -156,6 +165,7 @@ export function RecordsExplorer({ dataset }: RecordsExplorerProps) {
                 }
               }}
             >
+              <option value="ticketId">Ticket ID order</option>
               <option value="oldest">Oldest opening first</option>
               <option value="newest">Newest opening first</option>
             </select>
@@ -231,38 +241,13 @@ export function RecordsExplorer({ dataset }: RecordsExplorerProps) {
           </p>
         </section>
 
-        <p className="records-explorer__count" aria-live="polite">
-          Showing {filteredRows.length} of {dataset.rows.length} records
-        </p>
-
-        <div className="records-explorer__table-wrap">
-          <table>
-            <thead>
-              <tr>
-                {dataset.headers.map((header) => (
-                  <th key={header} scope="col">{header}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRows.map(({ row, index }) => (
-                <tr key={`${row[0] ?? 'record'}-${index}`}>
-                  {dataset.headers.map((header, columnIndex) => (
-                    <td key={`${header}-${columnIndex}`}>{row[columnIndex] ?? ''}</td>
-                  ))}
-                </tr>
-              ))}
-              {filteredRows.length === 0 && (
-                <tr>
-                  <td colSpan={dataset.headers.length}>
-                    No records match these filters.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
       </section>
+      <MatchingTickets
+        key={`${dataset.fileName}-${search}-${zone}-${status}-${sortOrder}`}
+        headers={dataset.headers}
+        rows={filteredRows.map(({ row }) => row)}
+      />
+      </>
     )
   }
 
