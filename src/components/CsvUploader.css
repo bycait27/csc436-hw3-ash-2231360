@@ -73,6 +73,7 @@
 
 .csv-uploader__file-control {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 0.75rem;
 }
@@ -87,13 +88,12 @@
 }
 
 .csv-uploader__input:focus-visible + .csv-uploader__button {
-  outline: 0.2rem solid #8ab4e8;
+  outline: 3px solid #35649b;
   outline-offset: 0.15rem;
 }
 
 .csv-uploader__input:disabled + .csv-uploader__button {
   cursor: wait;
-  opacity: 0.7;
 }
 
 .csv-uploader__button {
@@ -112,6 +112,8 @@
 }
 
 .csv-uploader__filename {
+  min-width: 0;
+  flex: 1;
   overflow: hidden;
   color: #536174;
   text-overflow: ellipsis;
@@ -140,6 +142,48 @@
 
 .csv-uploader__active strong {
   color: #253247;
+}
+
+.csv-uploader__rejection-notice {
+  margin-top: 0.5rem !important;
+  color: #536174;
+}
+
+.csv-uploader__rejections {
+  margin-top: 0.75rem;
+}
+
+.csv-uploader__rejections summary {
+  color: #245b91;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.csv-uploader__rejections summary:hover {
+  color: #173b6c;
+}
+
+.csv-uploader__rejections ul {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
+  list-style: none;
+}
+
+.csv-uploader__rejections li {
+  padding-left: 0.15rem;
+  color: #34445a;
+}
+
+.csv-uploader__rejections code {
+  overflow-wrap: anywhere;
+  color: #34445a;
+}
+
+.csv-uploader__rejections li p {
+  margin-top: 0.25rem;
+  color: #536174;
 }
 
 @media (max-width: 42rem) {

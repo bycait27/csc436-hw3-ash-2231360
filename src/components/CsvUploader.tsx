@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent } from 'react'
 import { parseCsv, type ParsedCsv } from '../lib/parseCsv'
+import { validateRecords } from '../lib/validateRecords'
 import './CsvUploader.css'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -18,20 +19,24 @@ const REQUIRED_HEADERS = [
 const INVALID_HEADER_MESSAGE =
   'The first record must contain exactly these headers, once each: ticket_id, zone, category, priority, opened_on, closed_on, estimated_hours, summary. Your previous analysis is unchanged.'
 
-export interface DatasetLoadResult {
-  acceptedCount: number
-  rejectedCount: number
-}
-
 interface CsvUploaderProps {
   onDatasetLoaded: (
-    dataset: ParsedCsv & { fileName: string },
-  ) => DatasetLoadResult | Promise<DatasetLoadResult>
-  onDatasetAccepted?: (dataset: ParsedCsv & { fileName: string }) => void
+    dataset: ParsedCsv & {
+      fileName: string
+      acceptedCount: number
+      rejectedCount: number
+    },
+  ) => void | Promise<void>
 }
 
-interface ActiveDataset extends DatasetLoadResult {
+interface ActiveDataset {
   fileName: string
+  acceptedCount: number
+  rejectedRecords: {
+    recordNumber: number
+    ticketId: string
+    reason: string
+  }[]
 }
 
 interface UploadError {
@@ -44,7 +49,6 @@ class InvalidCsvHeaderError extends Error {}
 
 export function CsvUploader({
   onDatasetLoaded,
-  onDatasetAccepted,
 }: CsvUploaderProps) {
   const [selectedFileName, setSelectedFileName] = useState('')
   const [activeDataset, setActiveDataset] = useState<ActiveDataset | null>(null)
@@ -85,25 +89,30 @@ export function CsvUploader({
         throw new InvalidCsvHeaderError(INVALID_HEADER_MESSAGE)
       }
 
-      if (parsed.rows.length > MAX_RECORDS) {
+      const validation = validateRecords(parsed)
+      const recordCount =
+        validation.acceptedRows.length + validation.rejectedRecords.length
+
+      if (recordCount === 0) {
+        throw new Error('CSV contains no records to analyze.')
+      }
+
+      if (recordCount > MAX_RECORDS) {
         throw new Error('Choose a CSV file with no more than 10,000 records.')
       }
 
-      const result = await onDatasetLoaded({ ...parsed, fileName: file.name })
-      const { acceptedCount, rejectedCount } = result
-
-      if (
-        !Number.isInteger(acceptedCount) ||
-        !Number.isInteger(rejectedCount) ||
-        acceptedCount < 0 ||
-        rejectedCount < 0 ||
-        acceptedCount + rejectedCount !== parsed.rows.length
-      ) {
-        throw new Error('The dataset validator returned invalid record counts.')
-      }
-
-      onDatasetAccepted?.({ ...parsed, fileName: file.name })
-      setActiveDataset({ fileName: file.name, acceptedCount, rejectedCount })
+      await onDatasetLoaded({
+        ...parsed,
+        rows: validation.acceptedRows,
+        fileName: file.name,
+        acceptedCount: validation.acceptedRows.length,
+        rejectedCount: validation.rejectedRecords.length,
+      })
+      setActiveDataset({
+        fileName: file.name,
+        acceptedCount: validation.acceptedRows.length,
+        rejectedRecords: validation.rejectedRecords,
+      })
     } catch (caughtError) {
       setError({
         fileName: file.name,
@@ -148,7 +157,7 @@ export function CsvUploader({
             {isLoading
               ? `Loading ${selectedFileName}…`
               : activeDataset
-                ? `Loaded ${activeDataset.fileName}: ${activeDataset.acceptedCount} accepted, ${activeDataset.rejectedCount} rejected.`
+              ? `Loaded ${activeDataset.fileName}: ${activeDataset.acceptedCount} accepted, ${activeDataset.rejectedRecords.length} rejected.`
                 : 'Ready for a file. Start with verification.csv or campus-tickets.csv.'}
           </p>
         )}
@@ -188,8 +197,31 @@ export function CsvUploader({
           </p>
           <p>
             <strong>{activeDataset.acceptedCount} accepted</strong> /{' '}
-            <strong>{activeDataset.rejectedCount} rejected</strong>
+            <strong>{activeDataset.rejectedRecords.length} rejected</strong>
           </p>
+          {activeDataset.rejectedRecords.length > 0 && (
+            <>
+              <p className="csv-uploader__rejection-notice">
+                Rejected records are not included in the analysis.
+              </p>
+              <details className="csv-uploader__rejections">
+                <summary>
+                  Rejected records in the active dataset (
+                  {activeDataset.rejectedRecords.length})
+                </summary>
+                <ul>
+                  {activeDataset.rejectedRecords.map((record) => (
+                    <li key={record.recordNumber}>
+                      <strong>Record {record.recordNumber}</strong>
+                      {' / '}
+                      <code>{record.ticketId || 'missing ticket ID'}</code>
+                      <p>{record.reason}</p>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </>
+          )}
         </div>
       )}
     </section>
