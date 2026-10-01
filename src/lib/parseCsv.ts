@@ -10,7 +10,7 @@ export function parseCsv(text: string): ParsedCsv {
     delimiter: ',',
     dynamicTyping: false,
     header: false,
-    skipEmptyLines: true,
+    skipEmptyLines: false,
   })
 
   if (result.errors.length > 0) {
