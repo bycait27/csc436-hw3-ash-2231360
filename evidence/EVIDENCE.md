@@ -54,9 +54,9 @@ Although South contains fewer total tickets, **33 out of 40 are open**, with **2
 
 > “Use Papa Parse with comma-delimited parsing and dynamic typing disabled, so fields remain strings and quoted commas/newlines are handled correctly.”
 
-**Action:** I accepted this approach and implemented it in [`parseCsv`](src/lib/parseCsv.ts). Papa Parse returns string values, which are then validated by [`validateRecords`](src/lib/validateRecords.ts).
+**Action:** I accepted this approach and implemented it in [`parseCsv`](../src/lib/parseCsv.ts). Papa Parse returns string values, which are then validated by [`validateRecords`](../src/lib/validateRecords.ts).
 
-**Why it's supported:** The A2 test in [`test/acceptance.test.ts`](test/acceptance.test.ts) confirms quoted fields, embedded commas, doubled quotes, and multiline summaries are parsed and retained correctly.
+**Why it's supported:** The A2 test in [`test/acceptance.test.ts`](../test/acceptance.test.ts) confirms quoted fields, embedded commas, doubled quotes, and multiline summaries are parsed and retained correctly.
 
 ## Quality checks and Test Status
 
