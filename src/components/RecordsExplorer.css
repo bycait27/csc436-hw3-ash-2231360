@@ -37,7 +37,7 @@
 .records-explorer__reset {
   min-height: 2.5rem;
   padding: 0.45rem 0.9rem;
-  border: 1px solid #9aa8b8;
+  border: 1px solid #718198;
   border-radius: 999px;
   background: transparent;
   color: #253247;
@@ -74,7 +74,7 @@
   min-height: 2.75rem;
   margin: 0;
   padding: 0.55rem 0.8rem;
-  border: 1px solid #c7d0dc;
+  border: 1px solid #718198;
   border-radius: 0.7rem;
   background: #fff;
   color: #253247;
@@ -85,7 +85,12 @@
 .records-explorer__field input:focus,
 .records-explorer__field select:focus {
   border-color: #35649b;
-  outline: 0.15rem solid rgb(53 100 155 / 20%);
+}
+
+.records-explorer__field input:focus-visible,
+.records-explorer__field select:focus-visible {
+  outline: 3px solid #35649b;
+  outline-offset: 2px;
 }
 
 .records-explorer__workload {
@@ -153,9 +158,12 @@
 }
 
 .records-explorer__zone-table-wrap {
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
   border-radius: 0.75rem;
   background: #eaf4ff;
+  overscroll-behavior-x: contain;
 }
 
 .records-explorer__zone-table {

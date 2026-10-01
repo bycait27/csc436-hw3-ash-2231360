@@ -1,16 +1,28 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { ParsedCsv } from '../lib/parseCsv'
+import {
+  filterRecords,
+  type SortOrder,
+  type StatusFilter,
+  type ZoneFilter,
+} from '../lib/filterRecords'
 import { calculateWorkload } from '../lib/workloadMetrics'
+import {
+  createAnalysisExport,
+  type AnalysisExport,
+} from '../lib/analysisExport'
 import { MatchingTickets } from './MatchingTickets'
 import './RecordsExplorer.css'
 
 interface RecordsExplorerProps {
-  dataset: (ParsedCsv & { fileName: string }) | null
+  dataset: (ParsedCsv & {
+    fileName: string
+    acceptedCount: number
+    rejectedCount: number
+    loadId: number
+  }) | null
+  onAnalysisChange: (analysis: AnalysisExport | null) => void
 }
-
-type ZoneFilter = 'all' | 'North' | 'Central' | 'South'
-type StatusFilter = 'all' | 'Open' | 'Closed'
-type SortOrder = 'ticketId' | 'oldest' | 'newest'
 
 function isZoneFilter(value: string): value is ZoneFilter {
   return ['all', 'North', 'Central', 'South'].includes(value)
@@ -24,7 +36,10 @@ function isSortOrder(value: string): value is SortOrder {
   return value === 'ticketId' || value === 'oldest' || value === 'newest'
 }
 
-export function RecordsExplorer({ dataset }: RecordsExplorerProps) {
+export function RecordsExplorer({
+  dataset,
+  onAnalysisChange,
+}: RecordsExplorerProps) {
   const [search, setSearch] = useState('')
   const [zone, setZone] = useState<ZoneFilter>('all')
   const [status, setStatus] = useState<StatusFilter>('all')
@@ -33,45 +48,16 @@ export function RecordsExplorer({ dataset }: RecordsExplorerProps) {
   const filteredRows = useMemo(() => {
     if (!dataset) return []
 
-    const columnIndex = new Map(
-      dataset.headers.map((header, index) => [header, index]),
-    )
-    const value = (row: string[], column: string) =>
-      row[columnIndex.get(column) ?? -1] ?? ''
-    const normalizedSearch = search.trim().toLocaleLowerCase()
-
-    return dataset.rows
-      .map((row, index) => ({ row, index }))
-      .filter(({ row }) => {
-        const matchesSearch =
-          normalizedSearch === '' ||
-          value(row, 'ticket_id').toLocaleLowerCase().includes(normalizedSearch) ||
-          value(row, 'summary').toLocaleLowerCase().includes(normalizedSearch)
-        const matchesZone = zone === 'all' || value(row, 'zone') === zone
-        const rowStatus = value(row, 'closed_on') === '' ? 'Open' : 'Closed'
-        const matchesStatus = status === 'all' || rowStatus === status
-
-        return matchesSearch && matchesZone && matchesStatus
-      })
-      .sort((first, second) => {
-        if (sortOrder === 'ticketId') {
-          return value(first.row, 'ticket_id').localeCompare(
-            value(second.row, 'ticket_id'),
-            undefined,
-            { numeric: true },
-          ) || first.index - second.index
-        }
-
-        const firstDate = value(first.row, 'opened_on')
-        const secondDate = value(second.row, 'opened_on')
-        const dateOrder = firstDate.localeCompare(secondDate)
-
-        return (sortOrder === 'oldest' ? dateOrder : -dateOrder) || first.index - second.index
-      })
+    return filterRecords(dataset.headers, dataset.rows, {
+      search,
+      zone,
+      status,
+      sortOrder,
+    })
   }, [dataset, search, sortOrder, status, zone])
 
   const workload = useMemo(
-    () => calculateWorkload(dataset?.headers ?? [], filteredRows.map(({ row }) => row)),
+    () => calculateWorkload(dataset?.headers ?? [], filteredRows),
     [dataset, filteredRows],
   )
   const zoneWorkloads = useMemo(
@@ -81,15 +67,35 @@ export function RecordsExplorer({ dataset }: RecordsExplorerProps) {
         metrics: calculateWorkload(
           dataset?.headers ?? [],
           filteredRows
-            .filter(({ row }) => {
+            .filter((row) => {
               const zoneIndex = dataset?.headers.indexOf('zone') ?? -1
               return (row[zoneIndex] ?? '') === zoneName
-            })
-            .map(({ row }) => row),
+            }),
         ),
       })),
     [dataset, filteredRows],
   )
+  const analysis = useMemo(
+    () =>
+      dataset
+        ? createAnalysisExport(
+            dataset.fileName,
+            dataset.acceptedCount,
+            dataset.rejectedCount,
+            dataset.headers,
+            filteredRows,
+            { search, zone, status },
+            sortOrder,
+            workload,
+            zoneWorkloads,
+          )
+        : null,
+    [dataset, filteredRows, search, sortOrder, status, workload, zone, zoneWorkloads],
+  )
+
+  useEffect(() => {
+    onAnalysisChange(analysis)
+  }, [analysis, onAnalysisChange])
 
   function resetFilters() {
     setSearch('')
@@ -206,7 +212,12 @@ export function RecordsExplorer({ dataset }: RecordsExplorerProps) {
           <p className="records-explorer__zone-caption">
             Compare zones within the current filters
           </p>
-          <div className="records-explorer__zone-table-wrap">
+          <div
+            className="records-explorer__zone-table-wrap"
+            role="region"
+            aria-label="Zone workload comparison table; scroll horizontally to see all columns"
+            tabIndex={0}
+          >
             <table className="records-explorer__zone-table">
               <thead>
                 <tr>
@@ -243,9 +254,9 @@ export function RecordsExplorer({ dataset }: RecordsExplorerProps) {
 
       </section>
       <MatchingTickets
-        key={`${dataset.fileName}-${search}-${zone}-${status}-${sortOrder}`}
+        key={`${dataset.loadId}-${search}-${zone}-${status}-${sortOrder}`}
         headers={dataset.headers}
-        rows={filteredRows.map(({ row }) => row)}
+        rows={filteredRows}
       />
       </>
     )
