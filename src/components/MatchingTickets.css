@@ -35,9 +35,12 @@
 }
 
 .matching-tickets__table-wrap {
+  min-width: 0;
+  max-width: 100%;
   overflow: auto;
   border-radius: 0.75rem;
   background: #eaf4ff;
+  overscroll-behavior: contain;
 }
 
 .matching-tickets__table-wrap table {
@@ -93,7 +96,7 @@
   justify-self: start;
   min-height: 2.4rem;
   padding: 0.4rem 0.9rem;
-  border: 1px solid #9aa8b8;
+  border: 1px solid #718198;
   border-radius: 999px;
   background: transparent;
   color: #253247;

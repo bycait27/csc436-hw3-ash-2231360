@@ -49,7 +49,12 @@ export function MatchingTickets({ headers, rows }: MatchingTicketsProps) {
             Source values. Unknown estimates stay unknown; closed-ticket hours
             do not enter open-workload totals.
           </p>
-          <div className="matching-tickets__table-wrap">
+          <div
+            className="matching-tickets__table-wrap"
+            role="region"
+            aria-label="Matching tickets table; scroll horizontally to see all columns"
+            tabIndex={0}
+          >
             <table>
               <thead>
                 <tr>
